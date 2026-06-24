@@ -1,0 +1,3512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hammam Gym — Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8102E;
+    --red-dark: #9B0C22;
+    --red-glow: rgba(200,16,46,0.3);
+    --bg: #0D0D0D;
+    --bg2: #141414;
+    --bg3: #1C1C1C;
+    --card: #181818;
+    --border: #2A2A2A;
+    --gold: #FFB800;
+    --gold-light: rgba(255,184,0,0.15);
+    --navy: #0F1B2D;
+    --text: #F0F0F0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --green: #22C55E;
+    --blue: #3B82F6;
+    --orange: #F97316;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════
+     SIDEBAR NAV
+  ═══════════════════════════════════════ */
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 240px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.3s;
+  }
+
+  .sidebar-logo {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sidebar-logo img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
+  .sidebar-logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .sidebar-logo-text span {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--red);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Role switcher */
+  .role-switcher {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .role-switcher label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .role-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .role-select:focus { border-color: var(--red); }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 12px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    padding: 10px 16px 4px;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: rgba(200,16,46,0.1);
+    color: var(--text);
+    border-left-color: var(--red);
+  }
+
+  .nav-item .nav-icon {
+    width: 16px;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════
+     MAIN CONTENT
+  ═══════════════════════════════════════ */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+
+  .icon-btn:hover { border-color: var(--red); }
+
+  .notif-dot {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 1px solid var(--bg2);
+  }
+
+  .content {
+    padding: 28px;
+    flex: 1;
+  }
+
+  /* ═══════════════════════════════════════
+     PAGES
+  ═══════════════════════════════════════ */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ═══════════════════════════════════════
+     COMPONENTS
+  ═══════════════════════════════════════ */
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .kpi-card:hover { border-color: var(--red); transform: translateY(-1px); }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card.red::before { background: var(--red); }
+  .kpi-card.gold::before { background: var(--gold); }
+  .kpi-card.green::before { background: var(--green); }
+  .kpi-card.blue::before { background: var(--blue); }
+  .kpi-card.orange::before { background: var(--orange); }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .kpi-trend-up { color: var(--green); }
+  .kpi-trend-down { color: var(--red); }
+
+  .kpi-icon {
+    position: absolute;
+    top: 18px; right: 18px;
+    font-size: 22px;
+    opacity: 0.15;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 18px;
+    background: var(--red);
+    border-radius: 2px;
+  }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-65-35 { display: grid; grid-template-columns: 65fr 35fr; gap: 20px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .card-body { padding: 20px; }
+
+  /* Tables */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .data-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Status badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-red { background: rgba(200,16,46,0.15); color: #FF4D6D; }
+  .badge-gold { background: rgba(255,184,0,0.15); color: var(--gold); }
+  .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .badge-gray { background: rgba(136,136,136,0.15); color: var(--text-muted); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--red-dark); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .btn-ghost:hover { border-color: var(--red); color: var(--text); }
+
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+  /* Avatars */
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .avatar-initials {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Progress bars */
+  .progress-bar {
+    height: 5px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s;
+  }
+
+  /* ═══════════════════════════════════════
+     CHART PLACEHOLDERS (SVG-based)
+  ═══════════════════════════════════════ */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  /* Donut */
+  .donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .donut-legend { flex: 1; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .legend-pct {
+    margin-left: auto;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Notification items */
+  .notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .notif-item:last-child { border-bottom: none; }
+
+  .notif-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .notif-text { flex: 1; }
+  .notif-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .notif-time { font-size: 11px; color: var(--text-muted); }
+
+  /* Member row */
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .member-row:last-child { border-bottom: none; }
+
+  .member-info { flex: 1; }
+  .member-name { font-size: 13px; font-weight: 500; }
+  .member-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Gauge */
+  .gauge-wrap {
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════
+     LANDING / HERO PAGE
+  ═══════════════════════════════════════ */
+  .hero {
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,16,46,0.12) 0%, transparent 70%),
+      url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80') center/cover no-repeat;
+    opacity: 0.25;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(13,13,13,0.6) 0%, rgba(13,13,13,0.95) 100%);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 40px 24px;
+  }
+
+  .hero-logo {
+    width: 120px;
+    margin: 0 auto 24px;
+    filter: drop-shadow(0 0 30px rgba(200,16,46,0.4));
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 0.95;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .hero-title span { color: var(--red); }
+
+  .hero-sub {
+    font-size: 17px;
+    color: rgba(240,240,240,0.65);
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto 36px;
+  }
+
+  .hero-cta-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+
+  .btn-hero {
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-hero-primary {
+    background: var(--red);
+    color: white;
+    box-shadow: 0 0 30px rgba(200,16,46,0.4);
+  }
+
+  .btn-hero-primary:hover {
+    background: var(--red-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(200,16,46,0.5);
+  }
+
+  .btn-hero-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .btn-hero-ghost:hover {
+    border-color: var(--red);
+    background: rgba(200,16,46,0.08);
+  }
+
+  /* Feature pills */
+  .hero-features {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .feature-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: rgba(240,240,240,0.7);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Roles showcase */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .role-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .role-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--red);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+  }
+
+  .role-card:hover { border-color: var(--red); transform: translateY(-3px); }
+  .role-card:hover::after { transform: scaleX(1); }
+
+  .role-card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .role-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .role-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════
+     MANAGER DASHBOARD
+  ═══════════════════════════════════════ */
+
+  /* Inline bar chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 100px;
+  }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height 0.5s;
+  }
+
+  .bar-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Sparkline */
+  .sparkline-area {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 2;
+  }
+
+  .sparkline-fill {
+    fill: url(#sparkGrad);
+    stroke: none;
+  }
+
+  /* ═══════════════════════════════════════
+     COACH DASHBOARD
+  ═══════════════════════════════════════ */
+  .trainee-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .trainee-card:hover { border-color: var(--red); }
+
+  .trainee-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .trainee-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+  }
+
+  .trainee-name { font-size: 14px; font-weight: 600; }
+  .trainee-plan { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .workout-day {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .workout-day-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .exercise-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+  }
+
+  .exercise-row:last-child { border-bottom: none; }
+
+  .exercise-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 10px;
+    transition: all 0.15s;
+  }
+
+  .exercise-check.done {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  /* ═══════════════════════════════════════
+     RECEPTIONIST
+  ═══════════════════════════════════════ */
+  .checkin-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-input:focus { border-color: var(--red); }
+  .search-input::placeholder { color: var(--text-dim); }
+
+  .today-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .today-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--text);
+  }
+
+  .today-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Schedule timeline */
+  .timeline {
+    position: relative;
+    padding-left: 16px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 16px 20px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid var(--bg2);
+  }
+
+  .timeline-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  .timeline-event {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .timeline-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ═══════════════════════════════════════
+     TRAINEE PORTAL
+  ═══════════════════════════════════════ */
+  .streak-banner {
+    background: linear-gradient(135deg, #1a0a05, #2d1106);
+    border: 1px solid rgba(255,184,0,0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .streak-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .streak-flame {
+    font-size: 42px;
+    filter: drop-shadow(0 0 12px rgba(255,184,0,0.5));
+  }
+
+  .streak-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .streak-label {
+    font-size: 13px;
+    color: rgba(255,184,0,0.7);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  .streak-badges {
+    display: flex;
+    gap: 10px;
+  }
+
+  .badge-chip {
+    background: rgba(255,184,0,0.1);
+    border: 1px solid rgba(255,184,0,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+
+  .badge-chip-icon { font-size: 22px; display: block; margin-bottom: 3px; }
+  .badge-chip-name { font-size: 10px; color: rgba(255,184,0,0.7); }
+
+  /* Leaderboard */
+  .leaderboard-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .leaderboard-row:last-child { border-bottom: none; }
+
+  .lb-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .lb-rank.gold { color: var(--gold); }
+  .lb-rank.silver { color: #C0C0C0; }
+  .lb-rank.bronze { color: #CD7F32; }
+  .lb-rank.normal { color: var(--text-muted); }
+
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 13px; font-weight: 600; }
+  .lb-sub { font-size: 11px; color: var(--text-muted); }
+  .lb-pts { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); }
+
+  /* Meal tracker */
+  .meal-slot {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .meal-icon { font-size: 24px; }
+
+  .meal-info { flex: 1; }
+  .meal-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .meal-macros { font-size: 11px; color: var(--text-muted); }
+
+  .meal-btns {
+    display: flex;
+    gap: 6px;
+  }
+
+  .meal-btn {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    color: var(--text-muted);
+  }
+
+  .meal-btn:hover { border-color: var(--green); color: var(--green); }
+  .meal-btn.eaten { background: rgba(34,197,94,0.1); border-color: var(--green); color: var(--green); }
+  .meal-btn.skipped { background: rgba(200,16,46,0.1); border-color: var(--red); color: #FF4D6D; }
+
+  /* Cafeteria */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .menu-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .menu-item:hover { border-color: var(--red); }
+
+  .menu-item-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+  }
+
+  .menu-item-body {
+    padding: 10px 12px;
+  }
+
+  .menu-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .menu-item-cal {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .menu-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .menu-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+  }
+
+  /* ═══════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════ */
+  .mt-4 { margin-top: 16px; }
+  .mt-6 { margin-top: 24px; }
+  .mb-4 { margin-bottom: 16px; }
+  .gap-3 { gap: 12px; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .text-muted { color: var(--text-muted); font-size: 12px; }
+  .font-bold { font-weight: 700; }
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold); }
+
+  /* Red slash accent */
+  .slash-accent {
+    display: inline-block;
+    width: 3px;
+    height: 16px;
+    background: var(--red);
+    border-radius: 2px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* Tabs inside pages */
+  .page-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+
+  .page-tab {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .page-tab.active {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-state-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Input group */
+  .input-group { margin-bottom: 16px; }
+  .input-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
+  .input-field {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-field:focus { border-color: var(--red); }
+
+  /* Modal-like wizard */
+  .wizard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 520px;
+  }
+
+  .wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--red);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-done {
+    background: var(--green);
+  }
+
+  .step-inactive {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Responsive tweak */
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-65-35 { grid-template-columns: 1fr; }
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Freeze alert */
+  .alert-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .alert-bar-red { background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.25); color: #FF4D6D; }
+  .alert-bar-gold { background: rgba(255,184,0,0.08); border: 1px solid rgba(255,184,0,0.2); color: var(--gold); }
+  .alert-bar-green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
+
+  /* Sauna/booking slot */
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  .slot {
+    border-radius: 6px;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+
+  .slot.available { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.25); color: var(--green); }
+  .slot.available:hover { background: rgba(34,197,94,0.2); }
+  .slot.booked { background: rgba(200,16,46,0.08); border-color: rgba(200,16,46,0.2); color: var(--text-muted); cursor: not-allowed; }
+  .slot.selected { background: var(--red); border-color: var(--red); color: white; }
+
+  /* Freeze form */
+  .freeze-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .freeze-stat {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .freeze-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--text);
+  }
+
+  .freeze-stat-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Subscription offer card */
+  .offer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .offer-card:hover { border-color: var(--red); }
+
+  .offer-card.featured {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--card), rgba(255,184,0,0.04));
+  }
+
+  .offer-badge-top {
+    position: absolute;
+    top: 12px; right: -10px;
+    background: var(--gold);
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 18px 3px 10px;
+    letter-spacing: 1px;
+  }
+
+  .offer-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .offer-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .offer-price span {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+  }
+
+  .offer-features { margin: 14px 0; }
+
+  .offer-feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: rgba(240,240,240,0.75);
+  }
+
+  .offer-feature::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* video placeholder */
+  .video-thumb {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .video-thumb img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    opacity: 0.7;
+  }
+
+  .video-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(200,16,46,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: white;
+    box-shadow: 0 0 20px rgba(200,16,46,0.5);
+  }
+
+  /* Photo grid */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .photo-slot {
+    aspect-ratio: 3/4;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+
+  .photo-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    padding: 8px 8px 6px;
+    font-size: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* TOAST & CART EXTRAS (new for cafeteria ordering) */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.2s forwards;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 380px;
+  }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.info { border-left: 3px solid var(--blue); }
+  .toast.warning { border-left: 3px solid var(--gold); }
+  @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+  .cart-item-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+  }
+  .cart-item-row:last-child { border-bottom: none; }
+  .cart-qty-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    line-height: 1;
+  }
+  .cart-qty-btn:hover { border-color: var(--red); color: var(--text); }
+  .pulse-dot { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+</style>
+</head>
+<body>
+<script>
+  if(localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "login.html";
+  }
+</script>
+<div class="app-shell">
+
+  <!-- ═══════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.png" alt="Hammam Gym">
+      <div class="sidebar-logo-text">
+        HAMMAM
+        <span>GYM SYSTEM</span>
+      </div>
+    </div>
+
+    <div class="role-switcher">
+      <label>Viewing as</label>
+      <select class="role-select" id="roleSelect" onchange="switchRole(this.value)">
+        <option value="landing">🏠 Overview</option>
+        <option value="manager">📊 Manager</option>
+        <option value="coach">🏋️ Coach</option>
+        <option value="receptionist">🖥️ Receptionist</option>
+        <option value="trainee">👤 Trainee</option>
+        <option value="cafeteria">☕ Cafeteria</option>
+      </select>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Filled dynamically -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">M</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarName">Mohamed Samir</div>
+          <div class="user-role" id="sidebarRole">Manager</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:15px;" onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════
+       MAIN AREA
+  ═══════════════════════════════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="page-title" id="topbarTitle">MANAGER DASHBOARD</div>
+      </div>
+      <div class="topbar-right">
+        <div class="icon-btn" title="Search">🔍</div>
+        <div class="icon-btn" title="Notifications" id="notifBtn">
+          🔔
+          <div class="notif-dot pulse-dot" id="globalNotifDot" style="display:none;"></div>
+        </div>
+        <div class="icon-btn" title="Settings">⚙️</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ═══════════════ LANDING ═══════════════ -->
+      <div class="page active" id="page-landing">
+        <div style="text-align:center; padding: 20px 0 40px;">
+          <img src="logo.png" style="width:110px; filter: drop-shadow(0 0 24px rgba(200,16,46,0.4)); margin-bottom: 20px;" alt="Hammam Gym">
+          <div style="font-family:'Bebas Neue',sans-serif; font-size:60px; line-height:0.95; letter-spacing:2px; margin-bottom:14px;">
+            HAMMAM GYM<br><span style="color:var(--red)">MANAGEMENT SYSTEM</span>
+          </div>
+          <div style="font-size:15px; color:rgba(240,240,240,0.6); max-width:540px; margin:0 auto 28px; line-height:1.7;">
+            A complete digital backbone for your gym — from front desk to coach dashboards, trainee engagement, and real-time KPIs.
+          </div>
+          <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:50px;">
+            <button class="btn btn-primary" style="padding:11px 28px; font-size:14px;" onclick="switchRole('manager')">🗂️ Open Manager View</button>
+            <button class="btn btn-ghost" style="padding:11px 28px; font-size:14px;" onclick="switchRole('trainee')">👤 Open Trainee View</button>
+          </div>
+
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:28px; max-width:780px; margin:0 auto;">
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:20px; color:var(--text-muted);">CHOOSE A ROLE TO EXPLORE</div>
+            <div class="roles-grid">
+              <div class="role-card" onclick="switchRole('manager')">
+                <div class="role-card-icon">📊</div>
+                <div class="role-card-title">Manager</div>
+                <div class="role-card-desc">KPI dashboards, coach performance, member analytics, subscription offers</div>
+              </div>
+              <div class="role-card" onclick="switchRole('coach')">
+                <div class="role-card-icon">🏋️</div>
+                <div class="role-card-title">Coach</div>
+                <div class="role-card-desc">Workout & meal plans, trainee tracking, leaderboard approvals</div>
+              </div>
+              <div class="role-card" onclick="switchRole('receptionist')">
+                <div class="role-card-icon">🖥️</div>
+                <div class="role-card-title">Receptionist</div>
+                <div class="role-card-desc">Member sign-up wizard, day passes, today's bookings & classes</div>
+              </div>
+              <div class="role-card" onclick="switchRole('trainee')">
+                <div class="role-card-icon">👤</div>
+                <div class="role-card-title">Trainee</div>
+                <div class="role-card-desc">Progress tracking, streaks, gamification, meal logging, booking</div>
+              </div>
+              <div class="role-card" onclick="switchRole('cafeteria')">
+                <div class="role-card-icon">☕</div>
+                <div class="role-card-title">Cafeteria</div>
+                <div class="role-card-desc">Inventory management, orders, low-stock alerts, pricing</div>
+              </div>
+              <div class="role-card" style="border-style:dashed; cursor:default;">
+                <div class="role-card-icon" style="opacity:0.3;">🛡️</div>
+                <div class="role-card-title" style="color:var(--text-muted)">Admin</div>
+                <div class="role-card-desc">Full system access, permissions, data configuration</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature highlights -->
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; max-width:780px; margin:24px auto 0; text-align:left;">
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="font-size:22px; margin-bottom:8px;">🔔</div>
+              <div style="font-weight:600; font-size:13px; margin-bottom:4px;">Auto Notifications</div>
+              <div style="font-size:12px; color:var(--text-muted);">Expiry alerts at 14, 7 & 3 days</div>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="font-size:22px; margin-bottom:8px;">🏆</div>
+              <div style="font-weight:600; font-size:13px; margin-bottom:4px;">Gamification</div>
+              <div style="font-size:12px; color:var(--text-muted);">Points, badges & leaderboards</div>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="font-size:22px; margin-bottom:8px;">📈</div>
+              <div style="font-weight:600; font-size:13px; margin-bottom:4px;">Real-Time KPIs</div>
+              <div style="font-size:12px; color:var(--text-muted);">Zero manual report compilation</div>
+            </div>
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="font-size:22px; margin-bottom:8px;">❄️</div>
+              <div style="font-weight:600; font-size:13px; margin-bottom:4px;">Freeze Workflow</div>
+              <div style="font-size:12px; color:var(--text-muted);">Rule-enforced freeze requests</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MANAGER ═══════════════ -->
+      <div class="page" id="page-manager">
+        <div class="alert-bar alert-bar-red" style="margin-bottom:20px;">
+          ⚠️ <strong>8 memberships</strong> expire within 7 days &nbsp;·&nbsp; <strong>3 at-risk members</strong> flagged — <span style="text-decoration:underline; cursor:pointer;">View All</span>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card red">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-label">Active Members</div>
+            <div class="kpi-value">247</div>
+            <div class="kpi-sub"><span class="kpi-trend-up">▲ 12</span> vs last month</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon">🆕</div>
+            <div class="kpi-label">New This Month</div>
+            <div class="kpi-value">34</div>
+            <div class="kpi-sub"><span class="kpi-trend-up">▲ 8%</span> vs June 2025</div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-label">At-Risk Members</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-sub"><span class="kpi-trend-down">14+ days</span> without renewal</div>
+          </div>
+          
+        </div>
+
+        <div class="grid-65-35 mt-4">
+
+          <!-- Member trend chart -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Member Growth — 2026</div>
+              <div class="flex gap-3 items-center">
+                <button class="btn btn-ghost btn-sm">7D</button>
+                <button class="btn btn-ghost btn-sm" style="border-color:var(--red);color:var(--text);">30D</button>
+                <button class="btn btn-ghost btn-sm">90D</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <svg viewBox="0 0 500 120" width="100%" style="overflow:visible;">
+                <defs>
+                  <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#C8102E" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#C8102E" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Grid lines -->
+                <line x1="0" y1="0" x2="500" y2="0" stroke="#2A2A2A" stroke-width="1"/>
+                <line x1="0" y1="40" x2="500" y2="40" stroke="#2A2A2A" stroke-width="1"/>
+                <line x1="0" y1="80" x2="500" y2="80" stroke="#2A2A2A" stroke-width="1"/>
+                <line x1="0" y1="120" x2="500" y2="120" stroke="#2A2A2A" stroke-width="1"/>
+                <!-- Labels -->
+                <text x="0" y="118" fill="#555" font-size="10">Jan</text>
+                <text x="62" y="118" fill="#555" font-size="10">Feb</text>
+                <text x="124" y="118" fill="#555" font-size="10">Mar</text>
+                <text x="186" y="118" fill="#555" font-size="10">Apr</text>
+                <text x="248" y="118" fill="#555" font-size="10">May</text>
+                <text x="310" y="118" fill="#555" font-size="10">Jun</text>
+                <!-- Fill area -->
+                <path d="M0,90 C40,85 60,75 83,70 C110,63 130,55 166,48 C200,42 220,38 249,32 C280,26 300,20 332,18 C360,16 390,14 415,12 C440,10 460,10 500,8 L500,110 L0,110 Z" fill="url(#sparkGrad)"/>
+                <!-- Line -->
+                <path d="M0,90 C40,85 60,75 83,70 C110,63 130,55 166,48 C200,42 220,38 249,32 C280,26 300,20 332,18 C360,16 390,14 415,12 C440,10 460,10 500,8" fill="none" stroke="#C8102E" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Dot at end -->
+                <circle cx="500" cy="8" r="4" fill="#C8102E"/>
+              </svg>
+              <div class="flex justify-between mt-4" style="font-size:12px; color:var(--text-muted);">
+                <div><span style="color:var(--text); font-weight:700;">Jan:</span> 198</div>
+                <div><span style="color:var(--text); font-weight:700;">Feb:</span> 205</div>
+                <div><span style="color:var(--text); font-weight:700;">Mar:</span> 213</div>
+                <div><span style="color:var(--text); font-weight:700;">Apr:</span> 221</div>
+                <div><span style="color:var(--text); font-weight:700;">May:</span> 236</div>
+                <div><span style="color:var(--red); font-weight:700;">Jun:</span> 247</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Membership distribution -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Membership Types</div>
+            </div>
+            <div class="card-body">
+              <div class="donut-wrap">
+                <svg viewBox="0 0 120 120" width="110" height="110" style="flex-shrink:0;">
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#1C1C1C" stroke-width="18"/>
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#C8102E" stroke-width="18"
+                    stroke-dasharray="150 151" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#FFB800" stroke-width="18"
+                    stroke-dasharray="78 223" stroke-dashoffset="-150" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#3B82F6" stroke-width="18"
+                    stroke-dasharray="45 256" stroke-dashoffset="-228" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="48" fill="none" stroke="#22C55E" stroke-width="18"
+                    stroke-dasharray="28 273" stroke-dashoffset="-273" transform="rotate(-90 60 60)"/>
+                  <text x="60" y="64" text-anchor="middle" fill="#F0F0F0" font-size="14" font-weight="700" font-family="Bebas Neue">247</text>
+                  <text x="60" y="75" text-anchor="middle" fill="#888" font-size="8">TOTAL</text>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Monthly <div class="legend-pct" style="color:var(--red)">50%</div></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> Quarterly <div class="legend-pct" style="color:var(--gold)">26%</div></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Annual <div class="legend-pct" style="color:var(--blue)">15%</div></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Day Pass <div class="legend-pct" style="color:var(--green)">9%</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coach performance & At-risk -->
+        <div class="grid-2 mt-6">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Coach Performance</div>
+              <button class="btn btn-ghost btn-sm">View All</button>
+            </div>
+            <div style="padding:16px 20px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Coach</th>
+                    <th>Clients</th>
+                    <th>Check-in Rate</th>
+                    <th>Avg Progress</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=11" class="avatar"> Ahmed Kamal</div></td>
+                    <td>22 / 25</td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:89%; background:var(--green);"></div></div>
+                        <span style="font-size:12px;">89%</span>
+                      </div>
+                    </td>
+                    <td><span style="color:var(--green);">+14%</span></td>
+                    <td><span class="badge badge-green">● Top</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=15" class="avatar"> Sara Nabil</div></td>
+                    <td>18 / 20</td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:74%; background:var(--blue);"></div></div>
+                        <span style="font-size:12px;">74%</span>
+                      </div>
+                    </td>
+                    <td><span style="color:var(--blue);">+9%</span></td>
+                    <td><span class="badge badge-blue">● Good</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=18" class="avatar"> Omar Farouk</div></td>
+                    <td>13 / 15</td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:60%; background:var(--orange);"></div></div>
+                        <span style="font-size:12px;">60%</span>
+                      </div>
+                    </td>
+                    <td><span style="color:var(--orange);">+3%</span></td>
+                    <td><span class="badge badge-orange">● Avg</span></td>
+                  </tr>
+                  <tr>
+                    <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=20" class="avatar"> Nour Hassan</div></td>
+                    <td>9 / 12</td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:52%; background:var(--red);"></div></div>
+                        <span style="font-size:12px;">52%</span>
+                      </div>
+                    </td>
+                    <td><span style="color:var(--red);">-2%</span></td>
+                    <td><span class="badge badge-red">● Low</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title" style="color:#FF4D6D;">⚠️ At-Risk Members</div>
+              <span class="badge badge-red">12 flagged</span>
+            </div>
+            <div class="card-body" style="padding:0 20px 16px;">
+              <div class="member-row">
+                <img src="https://i.pravatar.cc/32?img=3" class="avatar">
+                <div class="member-info">
+                  <div class="member-name">Kareem Mostafa</div>
+                  <div class="member-meta">Expired 21 days ago · Coach: Ahmed Kamal</div>
+                </div>
+                <button class="btn btn-ghost btn-sm">📞 Alert receptiones</button>
+              </div>
+              <div class="member-row">
+                <img src="https://i.pravatar.cc/32?img=5" class="avatar">
+                <div class="member-info">
+                  <div class="member-name">Dina El-Sayed</div>
+                  <div class="member-meta">Expired 18 days ago · Coach: Sara Nabil</div>
+                </div>
+                <button class="btn btn-ghost btn-sm">📞 Alert receptiones</button>
+              </div>
+              <div class="member-row">
+                <img src="https://i.pravatar.cc/32?img=7" class="avatar">
+                <div class="member-info">
+                  <div class="member-name">Hassan Tarek</div>
+                  <div class="member-meta">Expired 16 days ago · Coach: Omar Farouk</div>
+                </div>
+                <button class="btn btn-ghost btn-sm">📞 Alert receptiones</button>
+              </div>
+              <div class="member-row">
+                <img src="https://i.pravatar.cc/32?img=9" class="avatar">
+                <div class="member-info">
+                  <div class="member-name">Amira Khalil</div>
+                  <div class="member-meta">Expired 15 days ago · Unassigned</div>
+                </div>
+                <button class="btn btn-ghost btn-sm">📞 Alert receptiones</button>
+              </div>
+              <div style="margin-top:12px; text-align:center;">
+                <button class="btn btn-ghost btn-sm" style="width:100%;">View 8 more at-risk members</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expiring soon & subscription offers -->
+        <div class="grid-2 mt-6">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Expiring Soon</div>
+              <span class="badge badge-gold">8 members</span>
+            </div>
+            <div style="padding:0 20px 16px;">
+              <table class="data-table">
+                <thead><tr><th>Member</th><th>Plan</th><th>Expires</th><th>Notified</th></tr></thead>
+                <tbody>
+                  <tr><td>Yasmin Ali</td><td>Monthly</td><td style="color:var(--red);">3 days</td><td><span class="badge badge-green">✓ Sent</span></td></tr>
+                  <tr><td>Tarek Salah</td><td>Quarterly</td><td style="color:var(--orange);">5 days</td><td><span class="badge badge-green">✓ Sent</span></td></tr>
+                  <tr><td>Layla Ibrahim</td><td>Monthly</td><td>7 days</td><td><span class="badge badge-green">✓ Sent</span></td></tr>
+                  <tr><td>Maged Ramzy</td><td>Monthly</td><td>9 days</td><td><span class="badge badge-gray">Pending</span></td></tr>
+                  <tr><td>Hana Morsi</td><td>Annual</td><td>14 days</td><td><span class="badge badge-gray">Scheduled</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Subscription Offers</div>
+              <button class="btn btn-primary btn-sm">+ New Offer</button>
+            </div>
+            <div style="padding:0 20px 16px;">
+              <table class="data-table">
+                <thead><tr><th>Plan</th><th>Price</th><th>Duration</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Monthly</strong></td>
+                    <td>800 EGP</td>
+                    <td>30 days</td>
+                    <td><span class="badge badge-green">Active</span></td>
+                    <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Quarterly</strong></td>
+                    <td>2,100 EGP</td>
+                    <td>90 days</td>
+                    <td><span class="badge badge-green">Active</span></td>
+                    <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Annual</strong></td>
+                    <td>7,500 EGP</td>
+                    <td>365 days</td>
+                    <td><span class="badge badge-gold">Featured</span></td>
+                    <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Student</strong></td>
+                    <td>600 EGP</td>
+                    <td>30 days</td>
+                    <td><span class="badge badge-gray">Inactive</span></td>
+                    <td><button class="btn btn-ghost btn-sm">Activate</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Freeze requests -->
+        <div class="card mt-6">
+          <div class="card-header">
+            <div class="card-title">Pending Freeze Requests</div>
+            <span class="badge badge-orange">3 pending</span>
+          </div>
+          <div style="padding:0 20px 16px;">
+            <table class="data-table">
+              <thead><tr><th>Member</th><th>Coach</th><th>Start Date</th><th>Duration</th><th>Used This Year</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=2" class="avatar"> Rania Adel</div></td>
+                  <td>Ahmed Kamal</td>
+                  <td>June 20, 2026</td>
+                  <td>14 days</td>
+                  <td>0 / 2 freezes · 0/30 days</td>
+                  <td>
+                    <div class="flex gap-3">
+                      <button class="btn btn-primary btn-sm">✓ Approve</button>
+                      <button class="btn btn-ghost btn-sm" style="border-color:var(--red); color:#FF4D6D;">✕ Reject</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="flex items-center gap-3"><img src="https://i.pravatar.cc/32?img=6" class="avatar"> Khaled Saad</div></td>
+                  <td>Sara Nabil</td>
+                  <td>June 25, 2026</td>
+                  <td>7 days</td>
+                  <td>1 / 2 freezes · 14/30 days</td>
+                  <td>
+                    <div class="flex gap-3">
+                      <button class="btn btn-primary btn-sm">✓ Approve</button>
+                      <button class="btn btn-ghost btn-sm" style="border-color:var(--red); color:#FF4D6D;">✕ Reject</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ COACH ═══════════════ -->
+      <div class="page" id="page-coach">
+        <div class="kpi-grid" style="grid-template-columns: repeat(4,1fr);">
+          <div class="kpi-card blue">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-label">My Trainees</div>
+            <div class="kpi-value">22</div>
+            <div class="kpi-sub">3 slots remaining</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">Workouts Today</div>
+            <div class="kpi-value">16</div>
+            <div class="kpi-sub"><span class="kpi-trend-up">73%</span> compliance</div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-label">Missed Workouts</div>
+            <div class="kpi-value">4</div>
+            <div class="kpi-sub">Last 24 hours</div>
+          </div>
+          <div class="kpi-card gold">
+            <div class="kpi-icon">⏳</div>
+            <div class="kpi-label">Pending Approvals</div>
+            <div class="kpi-value">2</div>
+            <div class="kpi-sub">Powerlifting videos</div>
+          </div>
+        </div>
+
+        <div class="grid-65-35">
+          <!-- My trainees -->
+          <div>
+            <div class="section-header">
+              <div class="section-title">My Trainees</div>
+              <input class="search-input" style="width:200px; padding:7px 12px; font-size:12px;" placeholder="🔍 Search trainee...">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+
+              <div class="trainee-card">
+                <div class="trainee-card-top">
+                  <img src="https://i.pravatar.cc/42?img=12" class="trainee-avatar">
+                  <div style="flex:1;">
+                    <div class="trainee-name">Adham Fares</div>
+                    <div class="trainee-plan">Push/Pull/Legs · Week 3/8</div>
+                  </div>
+                  <span class="badge badge-green">Active</span>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Workout compliance</span><span style="color:var(--green)">85%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:85%; background:var(--green);"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Meal compliance</span><span style="color:var(--blue)">72%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:72%; background:var(--blue);"></div></div>
+                </div>
+                <div class="flex gap-3">
+                  <button class="btn btn-ghost btn-sm" style="flex:1;">View Plan</button>
+                  <button class="btn btn-primary btn-sm" style="flex:1;">Progress</button>
+                </div>
+              </div>
+
+              <div class="trainee-card">
+                <div class="trainee-card-top">
+                  <img src="https://i.pravatar.cc/42?img=14" class="trainee-avatar">
+                  <div style="flex:1;">
+                    <div class="trainee-name">Farida Gamal</div>
+                    <div class="trainee-plan">Full Body · Week 6/8</div>
+                  </div>
+                  <span class="badge badge-gold">At-Risk</span>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Workout compliance</span><span style="color:var(--orange)">41%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:41%; background:var(--orange);"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Meal compliance</span><span style="color:var(--red)">28%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:28%; background:var(--red);"></div></div>
+                </div>
+                <div class="flex gap-3">
+                  <button class="btn btn-ghost btn-sm" style="flex:1;">View Plan</button>
+                  <button class="btn btn-primary btn-sm" style="flex:1; background:var(--orange);">Check In</button>
+                </div>
+              </div>
+
+              <div class="trainee-card">
+                <div class="trainee-card-top">
+                  <img src="https://i.pravatar.cc/42?img=22" class="trainee-avatar">
+                  <div style="flex:1;">
+                    <div class="trainee-name">Mostafa Magdy</div>
+                    <div class="trainee-plan">Strength · Week 1/12</div>
+                  </div>
+                  <span class="badge badge-green">Active</span>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Workout compliance</span><span style="color:var(--green)">92%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:92%; background:var(--green);"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Meal compliance</span><span style="color:var(--green)">88%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:88%; background:var(--green);"></div></div>
+                </div>
+                <div class="flex gap-3">
+                  <button class="btn btn-ghost btn-sm" style="flex:1;">View Plan</button>
+                  <button class="btn btn-primary btn-sm" style="flex:1;">Progress</button>
+                </div>
+              </div>
+
+              <div class="trainee-card">
+                <div class="trainee-card-top">
+                  <img src="https://i.pravatar.cc/42?img=25" class="trainee-avatar">
+                  <div style="flex:1;">
+                    <div class="trainee-name">Salma Tawfiq</div>
+                    <div class="trainee-plan">Cardio + Tone · Week 4/6</div>
+                  </div>
+                  <span class="badge badge-blue">❄️ Frozen</span>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;">
+                    <span>Before freeze: Workout</span><span>78%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" style="width:78%; background:var(--text-dim);"></div></div>
+                </div>
+                <div class="alert-bar alert-bar-gold" style="margin:4px 0 0; padding:7px 10px; font-size:11px;">
+                  ❄️ Frozen until June 30 · Returns in 14 days
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Pending video approvals -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🎥 Pending Powerlifting Videos</div>
+                <span class="badge badge-orange">2</span>
+              </div>
+              <div class="card-body">
+                <div class="video-thumb" style="margin-bottom:12px;">
+                  <img src="https://images.unsplash.com/photo-1534438097545-a2c22c57f2ad?w=400&q=80" alt="Deadlift video">
+                  <div class="video-play"><div class="play-btn">▶</div></div>
+                  <div style="position:absolute; bottom:0; left:0; right:0; padding:8px; background:linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                    <div style="font-size:12px; font-weight:600;">Adham Fares — Deadlift 180kg</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Submitted 2 hours ago</div>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <button class="btn btn-primary btn-sm" style="flex:1;">✓ Approve & Add to LB</button>
+                  <button class="btn btn-ghost btn-sm" style="flex:1; color:#FF4D6D; border-color:var(--red);">✕ Reject</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Workout builder preview -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Today's Workout — Adham</div>
+                <span class="badge badge-green">In Progress</span>
+              </div>
+              <div class="card-body" style="padding:14px 16px;">
+                <div style="font-size:12px; font-weight:600; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px;">Day 4 — Chest & Triceps</div>
+                <div class="exercise-row">
+                  <div class="exercise-check done">✓</div>
+                  <div style="flex:1; font-size:13px;">Bench Press</div>
+                  <div style="font-size:12px; color:var(--text-muted);">4×8 · 80kg</div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check done">✓</div>
+                  <div style="flex:1; font-size:13px;">Incline Dumbbell Press</div>
+                  <div style="font-size:12px; color:var(--text-muted);">3×10 · 24kg</div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check" id="ex3" onclick="toggleEx(this)"></div>
+                  <div style="flex:1; font-size:13px;">Cable Flyes</div>
+                  <div style="font-size:12px; color:var(--text-muted);">3×12 · 20kg</div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check" id="ex4" onclick="toggleEx(this)"></div>
+                  <div style="flex:1; font-size:13px;">Tricep Pushdown</div>
+                  <div style="font-size:12px; color:var(--text-muted);">4×15 · 30kg</div>
+                </div>
+                <div class="exercise-row" style="border-bottom:none;">
+                  <div class="exercise-check" id="ex5" onclick="toggleEx(this)"></div>
+                  <div style="flex:1; font-size:13px;">Skull Crushers</div>
+                  <div style="font-size:12px; color:var(--text-muted);">3×10 · 15kg</div>
+                </div>
+                <div style="margin-top:12px;">
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:5px;"><span>Completion</span><span style="color:var(--green)">2 / 5</span></div>
+                  <div class="progress-bar" style="height:7px;"><div class="progress-fill" id="workoutProgress" style="width:40%; background:linear-gradient(to right, var(--red), var(--gold));"></div></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ RECEPTIONIST ═══════════════ -->
+      <div class="page" id="page-receptionist">
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;">
+          <div class="today-stat">
+            <div class="today-stat-num" style="color:var(--green);">47</div>
+            <div class="today-stat-label">Check-ins Today</div>
+          </div>
+          <div class="today-stat">
+            <div class="today-stat-num">6</div>
+            <div class="today-stat-label">New Sign-ups</div>
+          </div>
+          <div class="today-stat">
+            <div class="today-stat-num" style="color:var(--gold);">4</div>
+            <div class="today-stat-label">Day Passes</div>
+          </div>
+          <div class="today-stat">
+            <div class="today-stat-num" style="color:var(--blue);">3</div>
+            <div class="today-stat-label">Walk-in Inquiries</div>
+          </div>
+        </div>
+
+        <div class="grid-65-35">
+
+          <!-- Left: Member lookup + new signup -->
+          <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Quick check-in -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Member Look-up & Check-in</div>
+              </div>
+              <div class="card-body">
+                <div class="checkin-search">
+                  <input class="search-input" placeholder="Search by name, phone, or ID...">
+                  <button class="btn btn-primary">Search</button>
+                </div>
+                <!-- Result preview -->
+                <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:16px;">
+                  <div class="flex items-center gap-3 mb-4">
+                    <img src="https://i.pravatar.cc/50?img=8" style="width:50px; height:50px; border-radius:50%; border:2px solid var(--green);">
+                    <div>
+                      <div style="font-size:16px; font-weight:700;">Yasmin Ali</div>
+                      <div style="font-size:12px; color:var(--text-muted);">ID: HG-2024-0147 · Coach: Ahmed Kamal</div>
+                    </div>
+                    <div style="margin-left:auto;">
+                      <span class="badge badge-green" style="font-size:13px; padding:6px 12px;">● Active</span>
+                    </div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;">
+                    <div style="background:var(--card); border-radius:7px; padding:10px; text-align:center;">
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Plan</div>
+                      <div style="font-weight:600; font-size:13px;">Monthly</div>
+                    </div>
+                    <div style="background:var(--card); border-radius:7px; padding:10px; text-align:center;">
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Expires</div>
+                      <div style="font-weight:600; font-size:13px; color:var(--orange);">3 days</div>
+                    </div>
+                    <div style="background:var(--card); border-radius:7px; padding:10px; text-align:center;">
+                      <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Visits This Month</div>
+                      <div style="font-weight:600; font-size:13px;">18</div>
+                    </div>
+                  </div>
+                  <div class="alert-bar alert-bar-gold" style="margin-bottom:12px; font-size:12px;">
+                    ⚡ Membership expires in 3 days — consider renewing
+                  </div>
+                  <div class="flex gap-3">
+                    <button class="btn btn-primary" style="flex:1; font-size:13px;">✓ Check In</button>
+                    <button class="btn btn-ghost" style="flex:1; font-size:13px;">💳 Renew Plan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- New member wizard -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">New Member Sign-up</div>
+                <span class="badge badge-blue">Wizard</span>
+              </div>
+              <div class="card-body">
+                <div class="wizard-step">
+                  <div class="step-num step-done">✓</div>
+                  <div style="font-size:12px; font-weight:600; color:var(--green);">Personal Info</div>
+                  <div class="step-line"></div>
+                  <div class="step-num">2</div>
+                  <div style="font-size:12px; font-weight:600; color:var(--text);">Select Plan</div>
+                  <div class="step-line"></div>
+                  <div class="step-num step-inactive">3</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Assign Coach</div>
+                  <div class="step-line"></div>
+                  <div class="step-num step-inactive">4</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Confirm</div>
+                </div>
+
+                <div style="font-size:13px; font-weight:600; margin-bottom:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Step 2 — Choose Plan</div>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;">
+                  <div style="background:var(--bg3); border:2px solid var(--red); border-radius:8px; padding:14px; text-align:center; cursor:pointer;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; margin-bottom:3px;">Monthly</div>
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--red);">800</div>
+                    <div style="font-size:10px; color:var(--text-muted);">EGP / month</div>
+                  </div>
+                  <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; cursor:pointer;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; margin-bottom:3px;">Quarterly</div>
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:24px;">2,100</div>
+                    <div style="font-size:10px; color:var(--text-muted);">EGP / 3 months</div>
+                  </div>
+                  <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; cursor:pointer;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; margin-bottom:3px;">Annual</div>
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--gold);">7,500</div>
+                    <div style="font-size:10px; color:var(--gold);">Best Value</div>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <button class="btn btn-ghost" style="flex:1;">← Back</button>
+                  <button class="btn btn-primary" style="flex:1;">Continue →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Today's schedule -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Today's Schedule</div>
+                <span class="badge badge-blue">June 16</span>
+              </div>
+              <div class="card-body">
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-time">08:00 AM</div>
+                    <div class="timeline-event">Morning Yoga — Group Class</div>
+                    <div class="timeline-meta">12/15 booked · Coach: Sara Nabil</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-time">09:30 AM</div>
+                    <div class="timeline-event">Sauna Session Block</div>
+                    <div class="timeline-meta">5/8 slots booked</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-time">10:00 AM</div>
+                    <div class="timeline-event">PT: Ahmed Kamal ↔ Adham Fares</div>
+                    <div class="timeline-meta">Confirmed</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-time">12:00 PM</div>
+                    <div class="timeline-event">CrossFit — Group Class</div>
+                    <div class="timeline-meta">20/20 booked · Coach: Omar Farouk · FULL</div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-time">04:00 PM</div>
+                    <div class="timeline-event">Strength Training — Group</div>
+                    <div class="timeline-meta">8/15 booked · Coach: Ahmed Kamal</div>
+                  </div>
+                  <div class="timeline-item" style="padding-bottom:0;">
+                    <div class="timeline-time">06:00 PM</div>
+                    <div class="timeline-event">Zumba — Group Class</div>
+                    <div class="timeline-meta">14/20 booked · Coach: Nour Hassan</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lead capture -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Capture Walk-in Lead</div>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <label class="input-label">Full Name</label>
+                  <input class="input-field" placeholder="e.g. Ahmed Hassan">
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Phone</label>
+                  <input class="input-field" placeholder="01x-xxxx-xxxx">
+                </div>
+                <div class="input-group" style="margin-bottom:14px;">
+                  <label class="input-label">Interest</label>
+                  <select class="input-field">
+                    <option>Weight Loss</option>
+                    <option>Muscle Gain</option>
+                    <option>General Fitness</option>
+                    <option>Powerlifting</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" style="width:100%;">Save Lead</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ TRAINEE ═══════════════ -->
+      <div class="page" id="page-trainee">
+
+        <!-- Streak banner -->
+        <div class="streak-banner">
+          <div class="streak-left">
+            <div class="streak-flame">🔥</div>
+            <div>
+              <div class="streak-num">12</div>
+              <div class="streak-label">Day Streak — Keep it up!</div>
+            </div>
+            <div style="margin-left:20px;">
+              <div style="font-family:'Bebas Neue',sans-serif; font-size:32px; color:var(--gold);">1,240</div>
+              <div style="font-size:11px; color:rgba(255,184,0,0.7);">TOTAL POINTS</div>
+            </div>
+          </div>
+          <div class="streak-badges">
+            <div class="badge-chip">
+              <span class="badge-chip-icon">🥇</span>
+              <div class="badge-chip-name">First PR</div>
+            </div>
+            <div class="badge-chip">
+              <span class="badge-chip-icon">⚡</span>
+              <div class="badge-chip-name">7-Day Streak</div>
+            </div>
+            <div class="badge-chip">
+              <span class="badge-chip-icon">💪</span>
+              <div class="badge-chip-name">Iron Will</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-65-35">
+
+          <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Today's workout -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Today's Workout — Day 4: Chest & Triceps</div>
+                <div class="flex gap-3 items-center">
+                  <span class="badge badge-orange">Medium</span>
+                  <button class="btn btn-primary btn-sm">Mark Complete</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="flex gap-3 items-center" style="margin-bottom:14px;">
+                  <div style="font-size:12px; color:var(--text-muted);">Plan: Push/Pull/Legs — Week 3 of 8</div>
+                  <div style="margin-left:auto; font-size:12px; color:var(--text-muted);">Coach: Ahmed Kamal</div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check done">✓</div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:500;">Bench Press</div>
+                    <div style="font-size:11px; color:var(--text-muted);">4 sets × 8 reps · Rest: 90s</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:13px; font-weight:600; color:var(--green);">80kg ↑ PR</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Last: 75kg</div>
+                  </div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check done">✓</div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:500;">Incline DB Press</div>
+                    <div style="font-size:11px; color:var(--text-muted);">3 sets × 10 reps · Rest: 75s</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:13px; font-weight:600;">24kg</div>
+                    <div style="font-size:10px; color:var(--text-muted);">Last: 24kg</div>
+                  </div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check" onclick="toggleEx(this)"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:500;">Cable Flyes</div>
+                    <div style="font-size:11px; color:var(--text-muted);">3 sets × 12 reps · Rest: 60s</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <input class="input-field" style="width:70px; padding:4px 8px; font-size:12px; text-align:center;" placeholder="kg">
+                  </div>
+                </div>
+                <div class="exercise-row">
+                  <div class="exercise-check" onclick="toggleEx(this)"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:500;">Tricep Pushdown</div>
+                    <div style="font-size:11px; color:var(--text-muted);">4 sets × 15 reps · Rest: 60s</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <input class="input-field" style="width:70px; padding:4px 8px; font-size:12px; text-align:center;" placeholder="kg">
+                  </div>
+                </div>
+                <div class="exercise-row" style="border-bottom:none;">
+                  <div class="exercise-check" onclick="toggleEx(this)"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:500;">Skull Crushers</div>
+                    <div style="font-size:11px; color:var(--text-muted);">3 sets × 10 reps · Rest: 75s</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <input class="input-field" style="width:70px; padding:4px 8px; font-size:12px; text-align:center;" placeholder="kg">
+                  </div>
+                </div>
+                <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div class="progress-bar" style="width:200px; height:7px;"><div class="progress-fill" style="width:40%; background:linear-gradient(to right, var(--red), var(--gold));"></div></div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">2 of 5 exercises done</div>
+                  </div>
+                  <div>
+                    <label style="font-size:12px; color:var(--text-muted); margin-right:8px;">Rate difficulty:</label>
+                    <select class="input-field" style="width:auto; padding:5px 10px; font-size:12px; display:inline;">
+                      <option>Easy</option>
+                      <option selected>Medium</option>
+                      <option>Hard</option>
+                      <option>Failed</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Meal plan -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Today's Meal Plan</div>
+                <div style="font-size:12px; color:var(--text-muted);">2,400 kcal target · 180g protein</div>
+              </div>
+              <div class="card-body">
+                <div class="meal-slot">
+                  <div class="meal-icon">🌅</div>
+                  <div class="meal-info">
+                    <div class="meal-name">Breakfast — 7:00 AM</div>
+                    <div class="meal-macros">Oats + eggs + banana · 650 kcal · P:42g C:78g F:12g</div>
+                  </div>
+                  <div class="meal-btns">
+                    <button class="meal-btn eaten">✓ Eaten</button>
+                  </div>
+                </div>
+                <div class="meal-slot">
+                  <div class="meal-icon">☀️</div>
+                  <div class="meal-info">
+                    <div class="meal-name">Lunch — 1:00 PM</div>
+                    <div class="meal-macros">Grilled chicken + rice + salad · 750 kcal · P:55g C:80g F:14g</div>
+                  </div>
+                  <div class="meal-btns">
+                    <button class="meal-btn eaten">✓ Eaten</button>
+                  </div>
+                </div>
+                <div class="meal-slot">
+                  <div class="meal-icon">🌙</div>
+                  <div class="meal-info">
+                    <div class="meal-name">Dinner — 7:00 PM</div>
+                    <div class="meal-macros">Salmon + sweet potato · 680 kcal · P:45g C:60g F:22g</div>
+                  </div>
+                  <div class="meal-btns">
+                    <button class="meal-btn" onclick="this.className='meal-btn eaten'">Eaten</button>
+                    <button class="meal-btn" onclick="this.className='meal-btn skipped'">Skip</button>
+                  </div>
+                </div>
+                <div class="meal-slot" style="margin-bottom:0;">
+                  <div class="meal-icon">🍎</div>
+                  <div class="meal-info">
+                    <div class="meal-name">Snack — 4:00 PM</div>
+                    <div class="meal-macros">Protein shake + almonds · 320 kcal · P:38g C:14g F:10g</div>
+                  </div>
+                  <div class="meal-btns">
+                    <button class="meal-btn" onclick="this.className='meal-btn eaten'">Eaten</button>
+                    <button class="meal-btn" onclick="this.className='meal-btn skipped'">Skip</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right panel -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Progress snapshot -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">My Progress</div>
+                <button class="btn btn-ghost btn-sm">View All</button>
+              </div>
+              <div class="card-body">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                  <div style="background:var(--bg3); border-radius:8px; padding:12px; text-align:center;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--green);">82<span style="font-size:14px;">kg</span></div>
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Weight</div>
+                    <div style="font-size:11px; color:var(--green); margin-top:2px;">▼ 4kg lost</div>
+                  </div>
+                  <div style="background:var(--bg3); border-radius:8px; padding:12px; text-align:center;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--blue);">17<span style="font-size:14px;">%</span></div>
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Body Fat</div>
+                    <div style="font-size:11px; color:var(--green); margin-top:2px;">▼ 3% lost</div>
+                  </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <div style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Personal Records</div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <span>🏋️ Bench Press</span><span style="color:var(--gold); font-weight:700;">80kg ↑ PR</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <span>💀 Deadlift</span><span style="font-weight:700;">120kg</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; padding:5px 0;">
+                    <span>🦵 Squat</span><span style="font-weight:700;">100kg</span>
+                  </div>
+                </div>
+                <!-- Progress photos -->
+                <div style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Latest Photos (May 2026)</div>
+                <div class="photo-grid">
+                  <div class="photo-slot">
+                    <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=200&q=80" alt="Front">
+                    <div class="photo-label">Front</div>
+                  </div>
+                  <div class="photo-slot">
+                    <img src="https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=200&q=80" alt="Side">
+                    <div class="photo-label">Side</div>
+                  </div>
+                  <div class="photo-slot" style="background:var(--bg3); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <div style="text-align:center; color:var(--text-muted); font-size:12px;">+ Add<br>Back</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🏆 Monthly Leaderboard</div>
+              </div>
+              <div class="card-body" style="padding: 12px 16px;">
+                <div class="leaderboard-row">
+                  <div class="lb-rank gold">1</div>
+                  <img src="https://i.pravatar.cc/32?img=33" class="avatar">
+                  <div class="lb-info"><div class="lb-name">Mostafa Magdy</div><div class="lb-sub">22 workouts · 5 PRs</div></div>
+                  <div class="lb-pts">2,140</div>
+                </div>
+                <div class="leaderboard-row">
+                  <div class="lb-rank silver">2</div>
+                  <img src="https://i.pravatar.cc/32?img=12" class="avatar">
+                  <div class="lb-info"><div class="lb-name">Adham Fares</div><div class="lb-sub">19 workouts · 3 PRs</div></div>
+                  <div class="lb-pts">1,860</div>
+                </div>
+                <div class="leaderboard-row" style="background:rgba(255,184,0,0.05); border-radius:6px; padding:8px 4px;">
+                  <div class="lb-rank" style="color:var(--red);">3</div>
+                  <img src="https://i.pravatar.cc/32?img=8" class="avatar" style="border:2px solid var(--red);">
+                  <div class="lb-info"><div class="lb-name" style="color:var(--red);">You (Adham)</div><div class="lb-sub">17 workouts · 2 PRs</div></div>
+                  <div class="lb-pts">1,240</div>
+                </div>
+                <div class="leaderboard-row">
+                  <div class="lb-rank normal">4</div>
+                  <img src="https://i.pravatar.cc/32?img=22" class="avatar">
+                  <div class="lb-info"><div class="lb-name">Khaled Saad</div><div class="lb-sub">15 workouts</div></div>
+                  <div class="lb-pts">1,050</div>
+                </div>
+                <div class="leaderboard-row" style="border-bottom:none;">
+                  <div class="lb-rank normal">5</div>
+                  <img src="https://i.pravatar.cc/32?img=29" class="avatar">
+                  <div class="lb-info"><div class="lb-name">Tarek Salah</div><div class="lb-sub">13 workouts</div></div>
+                  <div class="lb-pts">890</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sauna booking -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🧖 Book Sauna — Today</div>
+              </div>
+              <div class="card-body">
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Tap a green slot to select</div>
+                <div class="slot-grid">
+                  <div class="slot booked">8:00</div>
+                  <div class="slot booked">9:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">10:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">11:00</div>
+                  <div class="slot booked">12:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">13:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">14:00</div>
+                  <div class="slot booked">15:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">16:00</div>
+                  <div class="slot booked">17:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">18:00</div>
+                  <div class="slot available" onclick="selectSlot(this)">19:00</div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:12px;">Confirm Booking</button>
+              </div>
+            </div>
+
+            <!-- NEW: CAFETERIA ORDERING CARD FOR TRAINEE -->
+            <div class="card" id="trainee-cafeteria-card">
+              <div class="card-header">
+                <div class="card-title">☕ Order from Cafeteria</div>
+                <span class="badge badge-gold" id="cart-badge" style="display:none;">0</span>
+              </div>
+              <div class="card-body" style="padding:14px 16px;">
+                <div id="trainee-menu-items" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;margin-bottom:12px;">
+                </div>
+                <div id="trainee-cart-summary" style="border-top:1px solid var(--border);padding-top:10px;display:none;">
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Your Cart</div>
+                  <div id="trainee-cart-items" style="margin-bottom:10px;"></div>
+                  <div class="flex justify-between items-center" style="margin-bottom:10px;">
+                    <span style="font-size:13px;font-weight:600;">Total</span>
+                    <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);" id="cart-total">0 EGP</span>
+                  </div>
+                  <div class="flex gap-3">
+                    <button class="btn btn-primary btn-sm" style="flex:1;" onclick="placeOrder()">📦 Place Order</button>
+                    <button class="btn btn-ghost btn-sm" onclick="clearCart()">🗑️ Clear</button>
+                  </div>
+                </div>
+                <div id="trainee-recent-orders" style="border-top:1px solid var(--border);padding-top:10px;margin-top:8px;display:none;">
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Your Recent Orders</div>
+                  <div id="trainee-orders-list"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ CAFETERIA ═══════════════ -->
+      <div class="page" id="page-cafeteria">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi-card green">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Items In Stock</div>
+            <div class="kpi-value" id="cafe-stock-count">38</div>
+            <div class="kpi-sub" id="cafe-lowstock-sub">2 low-stock alerts</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-label">Low Stock</div>
+            <div class="kpi-value" id="cafe-lowstock-count">2</div>
+            <div class="kpi-sub">Need reorder</div>
+          </div>
+          <div class="kpi-card gold">
+            <div class="kpi-icon">📋</div>
+            <div class="kpi-label">Orders Today</div>
+            <div class="kpi-value" id="cafe-orders-count">0</div>
+            <div class="kpi-sub" id="cafe-pending-sub">0 pending</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-label">Revenue Today</div>
+            <div class="kpi-value" id="cafe-revenue">0</div>
+            <div class="kpi-sub">EGP</div>
+          </div>
+        </div>
+
+        <div class="grid-65-35">
+          <!-- Menu items -->
+          <div>
+            <div class="section-header">
+              <div class="section-title">Menu Inventory</div>
+              <button class="btn btn-primary" onclick="addNewMenuItem()">+ Add Item</button>
+            </div>
+            <div class="menu-grid" id="cafeteria-menu-grid"></div>
+          </div>
+
+          <!-- Orders & alerts -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">⚠️ Low Stock Alerts</div>
+              </div>
+              <div class="card-body" id="cafeteria-lowstock-container">
+                <div class="empty-state"><div class="empty-state-icon">✅</div>No low-stock items</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Pending Orders</div>
+                <span class="badge badge-orange" id="cafe-pending-badge">0</span>
+              </div>
+              <div class="card-body" id="cafeteria-orders-container">
+                <div class="empty-state"><div class="empty-state-icon">📋</div>No pending orders</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">New Sale</div>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <label class="input-label">Member Name / ID</label>
+                  <input class="input-field" id="sale-member" placeholder="Search member...">
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Item</label>
+                  <select class="input-field" id="sale-item"></select>
+                </div>
+                <div class="input-group" style="margin-bottom:14px;">
+                  <label class="input-label">Qty</label>
+                  <input class="input-field" type="number" id="sale-qty" value="1" min="1">
+                </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="recordSale()">Record Sale</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  /* ════════════════════════════════
+     DATA LAYER — Cafeteria Menu & Orders
+  ════════════════════════════════ */
+  const STORAGE_KEYS = {
+    MENU: 'hammam_menu',
+    ORDERS: 'hammam_orders',
+    CART: 'hammam_cart'
+  };
+
+  const DEFAULT_MENU = [
+    { id: 1, name: 'Protein Shake', price: 45, protein: 25, kcal: 180, stock: 30, image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=300&q=80', category: 'Drink' },
+    { id: 2, name: 'Chicken Wrap', price: 65, protein: 38, kcal: 420, stock: 12, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&q=80', category: 'Meal' },
+    { id: 3, name: 'Energy Bar', price: 30, protein: 15, kcal: 230, stock: 8, image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=300&q=80', category: 'Snack' },
+    { id: 4, name: 'Fresh Orange Juice', price: 25, protein: 1, kcal: 110, stock: 20, image: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=300&q=80', category: 'Drink' },
+    { id: 5, name: 'Fruit Salad', price: 40, protein: 2, kcal: 150, stock: 15, image: 'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=300&q=80', category: 'Snack' },
+    { id: 6, name: 'Chicken Barbecue', price: 70, protein: 42, kcal: 480, stock: 6, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300&q=80', category: 'Meal' },
+    { id: 7, name: 'Milkshake Chocolate', price: 35, protein: 10, kcal: 280, stock: 10, image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&q=80', category: 'Drink' },
+    { id: 8, name: 'Ice Cream', price: 20, protein: 2, kcal: 120, stock: 2, image: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=300&q=80', category: 'Snack' },
+    { id: 9, name: 'Banana', price: 10, protein: 1, kcal: 90, stock: 3, image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&q=80', category: 'Snack' },
+  ];
+
+  function initMenu() {
+    if (!localStorage.getItem(STORAGE_KEYS.MENU)) {
+      saveMenu(DEFAULT_MENU);
+    }
+  }
+  function getMenu() {
+    initMenu();
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.MENU));
+  }
+  function saveMenu(menu) {
+    localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(menu));
+  }
+  function getMenuItem(id) {
+    return getMenu().find(item => item.id === id);
+  }
+  function updateStock(itemId, delta) {
+    const menu = getMenu();
+    const item = menu.find(i => i.id === itemId);
+    if (item) {
+      item.stock = Math.max(0, item.stock + delta);
+      saveMenu(menu);
+    }
+  }
+  function getLowStockItems() {
+    return getMenu().filter(item => item.stock <= 3);
+  }
+  function getTotalStockCount() {
+    return getMenu().reduce((sum, item) => sum + item.stock, 0);
+  }
+
+  /* CART */
+  function getCart() {
+    const raw = localStorage.getItem(STORAGE_KEYS.CART);
+    return raw ? JSON.parse(raw) : [];
+  }
+  function saveCart(cart) {
+    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+  }
+  function addToCart(itemId) {
+    const menu = getMenu();
+    const item = menu.find(i => i.id === itemId);
+    if (!item) return;
+    if (item.stock <= 0) {
+      showToast('Item out of stock!', 'warning');
+      return;
+    }
+    const cart = getCart();
+    const existing = cart.find(c => c.id === itemId);
+    if (existing) {
+      if (existing.qty >= item.stock) {
+        showToast('Not enough stock available!', 'warning');
+        return;
+      }
+      existing.qty += 1;
+    } else {
+      cart.push({ id: itemId, name: item.name, price: item.price, qty: 1 });
+    }
+    saveCart(cart);
+    showToast(`Added ${item.name} to cart`, 'success');
+    renderTraineeCafeteriaCard();
+    updateCartBadge();
+  }
+  function removeFromCart(index) {
+    const cart = getCart();
+    if (index >= 0 && index < cart.length) {
+      cart.splice(index, 1);
+      saveCart(cart);
+      renderTraineeCafeteriaCard();
+      updateCartBadge();
+    }
+  }
+  function increaseCartQty(index) {
+    const cart = getCart();
+    if (index >= 0 && index < cart.length) {
+      const item = getMenuItem(cart[index].id);
+      if (item && cart[index].qty < item.stock) {
+        cart[index].qty += 1;
+        saveCart(cart);
+        renderTraineeCafeteriaCard();
+        updateCartBadge();
+      } else {
+        showToast('Not enough stock!', 'warning');
+      }
+    }
+  }
+  function decreaseCartQty(index) {
+    const cart = getCart();
+    if (index >= 0 && index < cart.length) {
+      if (cart[index].qty > 1) {
+        cart[index].qty -= 1;
+      } else {
+        cart.splice(index, 1);
+      }
+      saveCart(cart);
+      renderTraineeCafeteriaCard();
+      updateCartBadge();
+    }
+  }
+  function clearCart() {
+    saveCart([]);
+    renderTraineeCafeteriaCard();
+    updateCartBadge();
+    showToast('Cart cleared', 'info');
+  }
+  function getCartTotal() {
+    return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
+  }
+  function getCartItemCount() {
+    return getCart().reduce((sum, item) => sum + item.qty, 0);
+  }
+  function updateCartBadge() {
+    const count = getCartItemCount();
+    const badge = document.getElementById('cart-badge');
+    if (badge) {
+      if (count > 0) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = count;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  /* ORDERS */
+  function getOrders() {
+    const raw = localStorage.getItem(STORAGE_KEYS.ORDERS);
+    return raw ? JSON.parse(raw) : [];
+  }
+  function saveOrders(orders) {
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+  }
+  function placeOrder() {
+    const cart = getCart();
+    if (cart.length === 0) {
+      showToast('Cart is empty!', 'warning');
+      return;
+    }
+    const memberName = document.getElementById('sidebarName').textContent || 'Adham Fares';
+    const order = {
+      id: Date.now(),
+      memberName: memberName,
+      items: cart.map(c => ({ ...c })),
+      total: getCartTotal(),
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    };
+    cart.forEach(c => {
+      updateStock(c.id, -c.qty);
+    });
+    const orders = getOrders();
+    orders.unshift(order);
+    saveOrders(orders);
+    saveCart([]);
+    showToast('Order placed successfully! 🎉', 'success');
+    renderTraineeCafeteriaCard();
+    updateCartBadge();
+    updateGlobalNotif();
+  }
+  function updateOrderStatus(orderId, newStatus) {
+    const orders = getOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      order.status = newStatus;
+      saveOrders(orders);
+      renderCafeteriaOrders();
+      showToast(`Order #${orderId.toString().slice(-4)} marked as ${newStatus}`, 'info');
+    }
+  }
+  function getPendingOrdersCount() {
+    return getOrders().filter(o => o.status === 'pending' || o.status === 'preparing').length;
+  }
+  function getTodayRevenue() {
+    const today = new Date().toDateString();
+    return getOrders().reduce((sum, o) => {
+      const orderDate = new Date(o.timestamp).toDateString();
+      if (orderDate === today && o.status !== 'cancelled') return sum + o.total;
+      return sum;
+    }, 0);
+  }
+  function getTodayOrdersCount() {
+    const today = new Date().toDateString();
+    return getOrders().filter(o => new Date(o.timestamp).toDateString() === today).length;
+  }
+
+  /* RENDERING */
+  function renderTraineeCafeteriaCard() {
+    const menuContainer = document.getElementById('trainee-menu-items');
+    const cartSummary = document.getElementById('trainee-cart-summary');
+    const cartItems = document.getElementById('trainee-cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const recentOrdersDiv = document.getElementById('trainee-recent-orders');
+    const traineeOrdersList = document.getElementById('trainee-orders-list');
+    if (!menuContainer) return;
+
+    const menu = getMenu();
+    const cart = getCart();
+
+    menuContainer.innerHTML = menu.map(item => {
+      const stockBadge = item.stock <= 3 ? '<span style="color:#FF4D6D;font-size:10px;">Low stock</span>' : '';
+      const disabled = item.stock === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : '';
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+          <img src="${item.image}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" alt="${item.name}">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+            <div style="font-size:10px;color:var(--text-muted);">${item.kcal} kcal · ${item.protein}g protein ${stockBadge}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);">${item.price} EGP</div>
+            <button class="btn btn-primary btn-xs" ${disabled} onclick="addToCart(${item.id})">+ Add</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (cart.length > 0) {
+      cartSummary.style.display = 'block';
+      cartItems.innerHTML = cart.map((c, i) => `
+        <div class="cart-item-row">
+          <span style="flex:1;font-size:12px;">${c.name}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="cart-qty-btn" onclick="decreaseCartQty(${i})">−</button>
+            <span style="font-size:12px;font-weight:600;min-width:18px;text-align:center;">${c.qty}</span>
+            <button class="cart-qty-btn" onclick="increaseCartQty(${i})">+</button>
+          </div>
+          <span style="font-size:12px;font-weight:600;min-width:50px;text-align:right;">${c.price * c.qty} EGP</span>
+          <button class="cart-qty-btn" style="color:#FF4D6D;border-color:var(--red);" onclick="removeFromCart(${i})">✕</button>
+        </div>
+      `).join('');
+      cartTotal.textContent = getCartTotal() + ' EGP';
+    } else {
+      cartSummary.style.display = 'none';
+    }
+
+    const memberName = document.getElementById('sidebarName').textContent || 'Adham Fares';
+    const myOrders = getOrders().filter(o => o.memberName === memberName).slice(0, 3);
+    if (myOrders.length > 0) {
+      recentOrdersDiv.style.display = 'block';
+      traineeOrdersList.innerHTML = myOrders.map(o => {
+        const statusBadge = o.status === 'pending' ? 'badge-orange' : o.status === 'preparing' ? 'badge-orange' : o.status === 'ready' ? 'badge-blue' : o.status === 'completed' ? 'badge-green' : 'badge-gray';
+        const statusIcon = o.status === 'pending' ? '⏳' : o.status === 'preparing' ? '👨‍🍳' : o.status === 'ready' ? '✅' : '✓';
+        return `
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;">
+            <span>${statusIcon}</span>
+            <span style="flex:1;">${o.items.map(i=>i.qty+'x '+i.name).join(', ')}</span>
+            <span class="badge ${statusBadge}" style="font-size:10px;">${o.status}</span>
+            <span style="color:var(--gold);font-weight:600;">${o.total} EGP</span>
+          </div>
+        `;
+      }).join('');
+    } else {
+      recentOrdersDiv.style.display = 'none';
+    }
+    updateCartBadge();
+  }
+
+  function renderCafeteriaOrders() {
+    const container = document.getElementById('cafeteria-orders-container');
+    const badge = document.getElementById('cafe-pending-badge');
+    const ordersCountEl = document.getElementById('cafe-orders-count');
+    const pendingSubEl = document.getElementById('cafe-pending-sub');
+    const revenueEl = document.getElementById('cafe-revenue');
+    if (!container) return;
+
+    const orders = getOrders();
+    const todayOrders = orders.filter(o => new Date(o.timestamp).toDateString() === new Date().toDateString());
+    const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'preparing').length;
+
+    if (badge) badge.textContent = pendingCount;
+    if (badge) badge.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
+    if (ordersCountEl) ordersCountEl.textContent = todayOrders.length;
+    if (pendingSubEl) pendingSubEl.textContent = pendingCount + ' pending';
+    if (revenueEl) revenueEl.textContent = getTodayRevenue().toLocaleString();
+
+    const displayOrders = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').slice(0, 10);
+    if (displayOrders.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div>No pending orders</div>';
+    } else {
+      container.innerHTML = displayOrders.map(o => {
+        const statusBadge = o.status === 'pending' ? 'badge-orange' : o.status === 'preparing' ? 'badge-orange' : o.status === 'ready' ? 'badge-blue' : 'badge-green';
+        const timeStr = new Date(o.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return `
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:8px;">
+            <div class="flex justify-between items-center" style="margin-bottom:6px;">
+              <div style="font-size:13px;font-weight:600;">${o.memberName}</div>
+              <span class="badge ${statusBadge}">${o.status}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${o.items.map(i=>i.qty+'× '+i.name).join(', ')} · <span style="color:var(--text-dim);">${timeStr}</span></div>
+            <div class="flex gap-3 items-center">
+              ${o.status === 'pending' ? `<button class="btn btn-primary btn-sm" style="flex:1;" onclick="updateOrderStatus(${o.id},'preparing')">Start Preparing</button>` : ''}
+              ${o.status === 'preparing' ? `<button class="btn btn-primary btn-sm" style="flex:1;" onclick="updateOrderStatus(${o.id},'ready')">Mark Ready ✓</button>` : ''}
+              ${o.status === 'ready' ? `<button class="btn btn-ghost btn-sm" style="flex:1;border-color:var(--green);color:var(--green);" onclick="updateOrderStatus(${o.id},'completed')">Complete ✓</button>` : ''}
+              <div style="font-size:13px;font-weight:700;color:var(--gold);padding:0 8px;">${o.total} EGP</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function renderCafeteriaMenuGrid() {
+    const grid = document.getElementById('cafeteria-menu-grid');
+    if (!grid) return;
+    const menu = getMenu();
+    grid.innerHTML = menu.map(item => {
+      const stockBadge = item.stock <= 3 ? '<span class="badge badge-red">Stock: ' + item.stock + '</span>' : '<span class="badge badge-green">Stock: ' + item.stock + '</span>';
+      return `
+        <div class="menu-item">
+          <img src="${item.image}" class="menu-item-img" alt="${item.name}">
+          <div class="menu-item-body">
+            <div class="menu-item-name">${item.name}</div>
+            <div class="menu-item-cal">${item.protein}g protein · ${item.kcal} kcal</div>
+            <div class="menu-item-footer">
+              <div class="menu-price">${item.price} EGP</div>
+              ${stockBadge}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('cafe-stock-count').textContent = getTotalStockCount();
+    document.getElementById('cafe-lowstock-count').textContent = getLowStockItems().length;
+    document.getElementById('cafe-lowstock-sub').textContent = getLowStockItems().length + ' low-stock alerts';
+  }
+
+  function renderLowStockAlerts() {
+    const container = document.getElementById('cafeteria-lowstock-container');
+    if (!container) return;
+    const lowStock = getLowStockItems();
+    if (lowStock.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div>No low-stock items</div>';
+    } else {
+      container.innerHTML = lowStock.map(item => `
+        <div class="alert-bar alert-bar-red" style="margin-bottom:8px;">
+          ${item.name} — only <strong>${item.stock}</strong> left
+          <button class="btn btn-ghost btn-xs" style="margin-left:auto;" onclick="restockItem(${item.id})">Restock</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  function restockItem(itemId) {
+    const menu = getMenu();
+    const item = menu.find(i => i.id === itemId);
+    if (item) {
+      const qty = prompt('Restock quantity for ' + item.name + '?', '20');
+      const num = parseInt(qty);
+      if (!isNaN(num) && num > 0) {
+        item.stock += num;
+        saveMenu(menu);
+        refreshCafeteriaView();
+        showToast(item.name + ' restocked by ' + num, 'success');
+      }
+    }
+  }
+
+  function refreshCafeteriaView() {
+    renderCafeteriaMenuGrid();
+    renderCafeteriaOrders();
+    renderLowStockAlerts();
+    updateSaleDropdown();
+  }
+
+  function updateSaleDropdown() {
+    const select = document.getElementById('sale-item');
+    if (!select) return;
+    const menu = getMenu();
+    select.innerHTML = menu.filter(i => i.stock > 0).map(i => `<option value="${i.id}">${i.name} — ${i.price} EGP (${i.stock} left)</option>`).join('');
+  }
+
+  function recordSale() {
+    const memberName = document.getElementById('sale-member').value.trim();
+    const itemId = parseInt(document.getElementById('sale-item').value);
+    const qty = parseInt(document.getElementById('sale-qty').value);
+    if (!memberName) { showToast('Please enter member name', 'warning'); return; }
+    if (!itemId || isNaN(qty) || qty < 1) { showToast('Invalid item or quantity', 'warning'); return; }
+    const item = getMenuItem(itemId);
+    if (!item || item.stock < qty) { showToast('Not enough stock!', 'warning'); return; }
+    updateStock(itemId, -qty);
+    const order = {
+      id: Date.now(),
+      memberName,
+      items: [{ id: itemId, name: item.name, price: item.price, qty }],
+      total: item.price * qty,
+      status: 'completed',
+      timestamp: new Date().toISOString()
+    };
+    const orders = getOrders();
+    orders.unshift(order);
+    saveOrders(orders);
+    document.getElementById('sale-member').value = '';
+    document.getElementById('sale-qty').value = '1';
+    refreshCafeteriaView();
+    showToast('Sale recorded: ' + qty + '× ' + item.name + ' (' + (item.price * qty) + ' EGP)', 'success');
+  }
+
+  function addNewMenuItem() {
+    const name = prompt('Item name?');
+    if (!name) return;
+    const price = parseInt(prompt('Price (EGP)?', '30'));
+    if (isNaN(price) || price <= 0) return;
+    const protein = parseInt(prompt('Protein (g)?', '10'));
+    const kcal = parseInt(prompt('Calories (kcal)?', '200'));
+    const stock = parseInt(prompt('Initial stock?', '15'));
+    const menu = getMenu();
+    const newItem = {
+      id: Math.max(...menu.map(i => i.id), 0) + 1,
+      name,
+      price,
+      protein: isNaN(protein) ? 0 : protein,
+      kcal: isNaN(kcal) ? 0 : kcal,
+      stock: isNaN(stock) ? 10 : stock,
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&q=80',
+      category: 'Other'
+    };
+    menu.push(newItem);
+    saveMenu(menu);
+    refreshCafeteriaView();
+    showToast('Added: ' + name, 'success');
+  }
+
+  function updateGlobalNotif() {
+    const dot = document.getElementById('globalNotifDot');
+    if (dot) {
+      const pending = getPendingOrdersCount();
+      dot.style.display = pending > 0 ? 'block' : 'none';
+    }
+  }
+
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+    toast.innerHTML = `<span>${icon}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 2500);
+  }
+
+  /* ════════════════════════════════
+     NAV DEFINITIONS (unchanged)
+  ════════════════════════════════ */
+  const navConfig = {
+    landing: {
+      title: 'OVERVIEW',
+      user: { initials: 'A', name: 'Admin Demo', role: 'System Preview' },
+      nav: []
+    },
+    manager: {
+      title: 'MANAGER DASHBOARD',
+      user: { initials: 'M', name: 'Mohamed Samir', role: 'Manager' },
+      nav: [
+        { section: 'OVERVIEW' }, { icon: '📊', label: 'Dashboard', active: true }, { icon: '👥', label: 'Members', badge: '8' }, { icon: '📅', label: 'Schedule' },
+        { section: 'OPERATIONS' }, { icon: '🧊', label: 'Freeze Requests', badge: '3' }, { icon: '🎟️', label: 'Subscription Offers' }, { icon: '🏋️', label: 'Coach Management' },
+        { section: 'REPORTS' }, { icon: '📈', label: 'Analytics' }, { icon: '⚠️', label: 'At-Risk Members', badge: '12' },
+      ]
+    },
+    coach: {
+      title: 'COACH PORTAL',
+      user: { initials: 'A', name: 'Ahmed Kamal', role: 'Coach' },
+      nav: [
+        { section: 'MY TRAINEES' }, { icon: '👥', label: 'All Trainees', active: true }, { icon: '⚠️', label: 'Missed Workouts', badge: '4' },
+        { section: 'PLANS' }, { icon: '🏋️', label: 'Workout Plans' }, { icon: '🥗', label: 'Meal Plans' },
+        { section: 'LEADERBOARD' }, { icon: '🎥', label: 'Video Approvals', badge: '2' }, { icon: '🏆', label: 'Leaderboard' },
+      ]
+    },
+    receptionist: {
+      title: 'FRONT DESK',
+      user: { initials: 'R', name: 'Reem Gamal', role: 'Receptionist' },
+      nav: [
+        { section: 'QUICK ACTIONS' }, { icon: '✅', label: 'Check-in', active: true }, { icon: '🆕', label: 'New Sign-up' }, { icon: '🏷️', label: 'Day Pass' }, { icon: '📋', label: 'Lead Capture' },
+        { section: "TODAY'S SCHEDULE" }, { icon: '📅', label: 'Classes & Bookings' }, { icon: '🧖', label: 'Sauna / Jacuzzi' },
+      ]
+    },
+    trainee: {
+      title: 'MY PORTAL',
+      user: { initials: 'AD', name: 'Adham Fares', role: 'Trainee' },
+      nav: [
+        { section: 'TODAY' }, { icon: '🏠', label: 'My Dashboard', active: true }, { icon: '🏋️', label: "Today's Workout" }, { icon: '🥗', label: "Today's Meals" },
+        { section: 'PROGRESS' }, { icon: '📏', label: 'Body Measurements' }, { icon: '📷', label: 'Progress Photos' }, { icon: '💪', label: 'Personal Records' },
+        { section: 'ENGAGE' }, { icon: '🏆', label: 'Leaderboard' }, { icon: '🏅', label: 'Badges & Points' },
+        { section: 'BOOK' }, { icon: '📅', label: 'Classes' }, { icon: '🧖', label: 'Sauna / Jacuzzi' }, { icon: '❄️', label: 'Freeze Membership' },
+      ]
+    },
+    cafeteria: {
+      title: 'CAFETERIA',
+      user: { initials: 'C', name: 'Omar Hosny', role: 'Cafeteria Staff' },
+      nav: [
+        { section: 'OPERATIONS' }, { icon: '📦', label: 'Inventory', active: true }, { icon: '🧾', label: 'Orders', badge: '0' }, { icon: '💰', label: 'Record Sale' },
+        { section: 'STOCK' }, { icon: '⚠️', label: 'Low Stock', badge: '0' }, { icon: '➕', label: 'Add Item' },
+      ]
+    }
+  };
+
+  /* ════════════════════════════════
+     SWITCH ROLE (unchanged)
+  ════════════════════════════════ */
+  function switchRole(role) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById('page-' + role);
+    if (page) page.classList.add('active');
+
+    const cfg = navConfig[role];
+    document.getElementById('topbarTitle').textContent = cfg.title;
+    document.getElementById('sidebarName').textContent = cfg.user.name;
+    document.getElementById('sidebarRole').textContent = cfg.user.role;
+    document.getElementById('sidebarAvatar').textContent = cfg.user.initials;
+    document.getElementById('roleSelect').value = role;
+
+    const nav = document.getElementById('sidebarNav');
+    nav.innerHTML = '';
+    cfg.nav.forEach(item => {
+      if (item.section) {
+        const lbl = document.createElement('div');
+        lbl.className = 'nav-section-label';
+        lbl.textContent = item.section;
+        nav.appendChild(lbl);
+      } else {
+        const a = document.createElement('div');
+        a.className = 'nav-item' + (item.active ? ' active' : '');
+        a.innerHTML = `<span class="nav-icon">${item.icon}</span>${item.label}${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}`;
+        a.onclick = function() {
+          nav.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+          a.classList.add('active');
+        };
+        nav.appendChild(a);
+      }
+    });
+
+    setTimeout(() => {
+      if (role === 'trainee') {
+        renderTraineeCafeteriaCard();
+        updateCartBadge();
+      } else if (role === 'cafeteria') {
+        refreshCafeteriaView();
+        updateGlobalNotif();
+      }
+      updateGlobalNotif();
+    }, 150);
+  }
+
+  /* ════════════════════════════════
+     INTERACTIVITY (unchanged)
+  ════════════════════════════════ */
+  function toggleEx(el) {
+    el.classList.toggle('done');
+    el.textContent = el.classList.contains('done') ? '✓' : '';
+  }
+
+  function selectSlot(el) {
+    document.querySelectorAll('.slot.selected').forEach(s => {
+      s.classList.remove('selected');
+      s.classList.add('available');
+    });
+    el.classList.remove('available');
+    el.classList.add('selected');
+  }
+
+  /* ════════════════════════════════
+     INIT (extended)
+  ════════════════════════════════ */
+  function logout() {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+  }
+
+  window.onload = function() {
+    initMenu();
+    const role = localStorage.getItem("role");
+    if (role) {
+      switchRole(role);
+      document.getElementById("roleSelect").value = role;
+    } else {
+      switchRole('landing');
+    }
+    updateGlobalNotif();
+    updateCartBadge();
+    setInterval(() => {
+      updateGlobalNotif();
+      const activePage = document.querySelector('.page.active');
+      if (activePage && activePage.id === 'page-cafeteria') {
+        renderCafeteriaOrders();
+        renderLowStockAlerts();
+      }
+      if (activePage && activePage.id === 'page-trainee') {
+        renderTraineeCafeteriaCard();
+        updateCartBadge();
+      }
+    }, 10000);
+  };
+</script>
+</body>
+</html>
